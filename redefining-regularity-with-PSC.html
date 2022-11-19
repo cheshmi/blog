@@ -8,7 +8,7 @@
 
 <html>
 	<head>
-		<title>Struggling in Unconciousness</title>
+		<title>Re-defining Regularity</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<meta name="keywords" content="Kazem Cheshmi, Web page, CV, Resume, Sparse, Matrix, Math, Programming, Parallel, Compiler ">
@@ -129,7 +129,7 @@ To illustrate the PSC definition, we compare a PSC-based and a BLAS-based implem
 							</span>
 
 
-  The performance of BLAS-based and PSC-based implementations is demonstrated in Figure 3 for a single thread of a cascade processor. As shown, the PSC-based implementation is almost always faster than the BLAS-based. The main reason is that PSCs prioritize contiguously (strided) accesses to Ax, and tolerate random accesses to x. BLAS treats access to Ax and x similarly and thus makes non-contiguous accesses to Ax, degrading spatial locality. The BLAS implementation is known to be fast for large dense matrices, so, we tested for small and large dense sub-matrices for fairness. The code for the experiment is publicly available. There are two more PSC-based implementations and scalarized code in the code base. We show the most performance PSC implementation here, but other PSC implementations are steadily faster than BLAS-based and scalarized SpMV.
+  The performance of BLAS-based and PSC-based implementations is demonstrated in Figure 3 for a single thread of a cascade processor. As shown, the PSC-based implementation is almost always faster than the BLAS-based. The main reason is that PSCs prioritize contiguously (strided) accesses to Ax, and tolerate random accesses to x. BLAS treats access to Ax and x similarly and thus makes non-contiguous accesses to Ax, degrading spatial locality. The BLAS implementation is known to be fast for large dense matrices, so, we tested for small and large dense sub-matrices for fairness. The code for the experiment is publicly available from here<a href="https://github.com/cheshmi/psc_example"> here</a>. There are two more PSC-based implementations and scalarized code in the code base. We show the most performance PSC implementation here, but other PSC implementations are steadily faster than BLAS-based and scalarized SpMV.
 
 							<span class="image blog">
 							<figure>
@@ -142,14 +142,12 @@ To illustrate the PSC definition, we compare a PSC-based and a BLAS-based implem
 </p>
 
 <h2><strong>What are PSCs?</strong></h2>
-<p align="justify">
-	
-We model accesses within a computation region with access functions. An access function maps an iteration space to a data space. When there is at least one strided access function and one random (unstrided) access function, the region is defined as a PSC. If all access functions are strided, then it is a fully strided region, e.g. a BLAS call.
-Finding PSCs can be done at compile-time or runtime. For example, the SpMV code shown in Listing 1 is a PSC. However, for efficiency, we should use sparsity information to extract smaller and more performant PSCs. We have used a differentiation-based PSC synthesis along with a graph-covering problem to find PSCs in SpMV, sparse triangular solver, and sparse-dense matrix multiplication. Please check our paper for more details.
+							<p align="justify">
+								
+							We model accesses within a computation region with access functions. An access function maps an iteration space to a data space. When there is at least one strided access function and one random (unstrided) access function, the region is defined as a PSC. If all access functions are strided, then it is a fully strided region, e.g. a BLAS call.
+							Finding PSCs can be done at compile-time or runtime. For example, the SpMV code shown in Listing 1 is a PSC. However, for efficiency, we should use sparsity information to extract smaller and more performant PSCs. We have used a differentiation-based PSC synthesis along with a graph-covering problem to find PSCs in SpMV, sparse triangular solver, and sparse-dense matrix multiplication. Please check<a href="https://www.cs.toronto.edu/~mmehride/papers/PSC.pdf"> our paper</a> and <a href="https://github.com/sympiler/codelet_mining"> code repository</a> for more details.
 
-
-
-	</p>
+							</p>
 
 
 						</div>
