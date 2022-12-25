@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<!--
+	Miniport by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+	Modified by Kazem Cheshmi
+-->
+
+<html>
+	<head>
+		<title>Loop-carried dependence vs parallel loop</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<meta name="keywords" content="Kazem Cheshmi, Web page, CV, Resume, Sparse, Matrix, Math, Programming, Parallel, Compiler ">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-178642760-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-178642760-1');
+</script>
+
+
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+		<link rel="stylesheet" href="assets/css/main.css" />
+		
+	</head>
+	<body class="is-preload">
+
+		<!-- Nav -->
+
+<!-- 			<nav id="nav">
+				<ul class="container">
+					<li><a href="https://cheshmi.cc/">Home</a></li>
+					<li><a href="https://cheshmi.cc/#students">Future Students</a></li>
+					<li><a href="https://cheshmi.cc/#awards">Awards</a></li>
+					<li><a href="https://cheshmi.cc/#publications">Publications</a></li>
+					<li><a href="https://cheshmi.cc/">Blog</a></li>
+				</ul>
+			</nav> -->
+
+
+		<!-- Nav -->
+
+			<nav id="navb">
+				<ul class="container">
+					<li><a href="index.html">Home</a></li>
+
+				</ul>
+			</nav>
+		<!-- Home -->
+			<article id="top" class="wrapper style2">
+				<div class="container">
+					<div class="row">
+
+						<div class="col-8 col-6-large col-10-medium">
+							<header>
+								<h2><strong>The performance of loop-carried dependence versus parallel loops </strong></h2>
+								Kazem Cheshmi, Dec 22
+							</header>
+
+						</div>
+					</div>
+				</div>
+			</article>
+
+		<!-- Work -->
+			<article id="edu" class="wrapper style1">
+				<div class="container">
+					<div class="row aln-left">
+
+						<div class="col-8 col-6-large col-10-medium">
+							
+
+		<p align="justify">					
+
+Loop statements are fundamental in any program and take most of the execution time. If iterations of a loop are independent, then they can run in parallel thus the loop is called a parallel loop. If iterations of a loop require a specific order of execution for correctness, then the loop is called a loop-carried dependence. Parallel loops provide an easier way to use all parallel resources, so algorithms are designed or redesigned to use parallel loops for better performance. I use matrix operations in this post to illustrate the performance gap between a parallel loop and a loop-carried dependence and discuss how sparse data bridges the gap.
+
+							
+
+
+</p>
+
+<h2><strong>Background </strong></h2>
+
+<p align="justify">
+I use two popular matrix operations, matrix-vector multiplication (MV) and lower triangular solve (SV), to compare the performance of a loop-carried dependence with a parallel loop. The outermost loop of MV is parallel, and the outermost loop of SV carries dependence. Figure 1 shows the code for the two operations. The two operations can be applied to a sparse matrix, a matrix in which most of its elements are zeros. The operation’s code and the matrix storage format should change to skip instructions corresponding to zero elements. This zero skipping also removes some dependent iterations in the SV, improving its parallel execution. I use these two operations as a case study to discuss the performance of parallel loops and loop-carried dependence.   
+
+
+														<span class="image blog">
+							<figure>
+								<pre><code class="language-C++" >
+							 /// Computing b=A*x
+							 for(int i = 0; i < M; i++) 
+							    for(int j = 0; j < N; j++) 
+							       b[i] += A[i][j] * x[j];
+
+							 /// Solving Lx=b for x
+							 for(int i = 0; i < M; i++) {
+							    for(int j = 0; j < i; j++) 
+							       x[i] -= L[i][j] * x[j];
+							    x[i] /= L[i][i];
+							 }
+							</code></pre>
+								<figcaption><i>Listing 1 - The code for matrix multiplication (MV) and lower triangular solve (SV). </i>	</figcaption>
+							</figure>
+							</span>
+
+
+</p>
+
+
+<h2><strong>The effect of sparse dependence </strong></h2>
+<p align="justify">
+Figure 2 compares the performance of SV and MV operations when the input is dense and sparse matrices on <a href="https://docs.scinet.utoronto.ca/index.php/Niagara_Quickstart"> 40 Intel Skylake cores (dual socket)</a>. Dense matrices are randomly generated, and sparse matrices are the lower triangular part of all symmetric positive definite matrices larger than 1 million nonzero elements from <a href="https://sparse.tamu.edu/">SuiteSparse</a>. For dense operations, <a href="https://www.intel.com/content/www/us/en/develop/documentation/get-started-with-mkl-for-dpcpp/top.html">MKL (Math Kernel Library)</a> BLAS (Basic Linear Algebra Subroutine) calls to GEMV, and TRSM are used. For sparse operations, two different implementations are selected, MKL (I/E) and <a href="http://sympiler.com/">Sympiler</a>. MKL benefits from vector and thread-level parallelism, and Sympiler uses thread-level parallelism (scalarized). The theoretical FLOP (floating-point operation) of the matrix operation is used to compute the GFLIP/s in different implementations. The performance gap between SV and MV operations is different for sparse and dense matrices.
+</p>
+
+<p align="justify">
+							<div class="image blog">
+							<figure>
+								<img src="images/sympiler_lbc40.png" alt="" />
+								<figcaption><i>Figure 2 - The performance of a parallel loop (MV) versus a loop-carried dependence (SV) on 40 Intel Skylake cores for a set of dense (a) and sparse matrices (b)-(c).</i>	</figcaption>
+							</figure>
+
+							</div>
+
+
+Figure 2a demonstrates the performance of MV and SV for dense matrices. The performance of dense MV is better than the dense SV, with a geometric average speedup of 5.2X. The large gap is because iterations of MV run in parallel and use parallel cores efficiently, providing a performance between 5.8-96 GFLOP/s. The performance of dense SV remains between 2.3-7.3 GFLOP/s because thread-level parallelism is limited due to dependence between every pair of consecutive iterations. 
+
+</p>
+
+<p align="justify">
+The performance MV and SV for sparse matrices are shown in Figures 2b and 2c for two different implementations. The geometric mean speedups of sparse MV over sparse SV for Sympiler and MKL are 2X and 3.3X, respectively. As shown, compared to the dense implementation, the gap is reduced noticeably (from 5.2X to 2X). The performance of Sympiler sparse MV is between 5-33 GFLOP/s, and the performance of Sympiler sparse SV is between 2-16 GFLOPS/s, which are close to each other. The main reason is dependence removal due to zero elements in the matrix. This reduced gap can potentially help pre-conditioned iterative solvers, which have a fast convergence rate, but computing the preconditioner often becomes their bottleneck and thus makes them slower than other iterative solvers that rely on parallel loops. Note that dense and sparse matrices are not equivalent, and their performance cannot be compared one-to-one. However, when the number of nonzero elements is identical, the performance numbers provide insight. The code repository, including setup details, data, and scripts, for the experiment, is available <a href="https://github.com/cheshmi/loop-dependence">here</a>.
+
+
+</p>
+
+<h2><strong>Limitations</strong></h2>
+							<p align="justify">
+								
+							Parallelism in loop-carried sparse dependence comes from properties of sparse data and it has some limitations. Extracting parallelism requires a pre-processing phase, a runtime inspection, that creates an overhead. Since the computation pattern remains static and known at compile-time in many applications, the inspection is done once and reused multiple times, amortizing the cost over the number of runs. For example, in iterative solvers, the preconditioner determines the sparsity of the SV operation which is used in all iterations of the solver. Also, since parallelism is data-dependent, the performance gap can increase when the computation pattern is inherently sequential, i.e., no thread-level parallelism. However, there are sparsification techniques to alleviate this problem.
+
+							</p>
+
+
+						</div>
+					</div>
+				</div>
+			</article>
+
+
+
+
+
+
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+
+
+	</body>
+</html>
