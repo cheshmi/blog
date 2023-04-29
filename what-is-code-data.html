@@ -1,0 +1,161 @@
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+	<head>
+		<title>What is Code? What is Data?</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<meta name="keywords" content="Kazem Cheshmi, Blog, Sparse, Matrix, Math, Programming, Parallel, Compiler ">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-178642760-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-178642760-1');
+</script>
+
+
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+		<link rel="stylesheet" href="assets/css/main.css" />
+		
+	</head>
+	<body class="is-preload">
+
+		<!-- Nav -->
+
+<!-- 			<nav id="nav">
+				<ul class="container">
+					<li><a href="https://cheshmi.cc/">Home</a></li>
+					<li><a href="https://cheshmi.cc/#students">Future Students</a></li>
+					<li><a href="https://cheshmi.cc/#awards">Awards</a></li>
+					<li><a href="https://cheshmi.cc/#publications">Publications</a></li>
+					<li><a href="https://cheshmi.cc/">Blog</a></li>
+				</ul>
+			</nav> -->
+
+
+		<!-- Nav -->
+
+			<nav id="navb">
+				<ul class="container">
+					<li><a href="index.html">Home</a></li>
+
+				</ul>
+			</nav>
+		<!-- Home -->
+			<article id="top" class="wrapper style2">
+				<div class="container">
+					<div class="row">
+
+						<div class="col-8 col-6-large col-10-medium">
+							<header>
+								<h2><strong>What is Code? What is Data? </strong></h2>
+								Kazem Cheshmi, Apr 29
+							</header>
+
+						</div>
+					</div>
+				</div>
+			</article>
+
+		<!-- Work -->
+			<article id="edu" class="wrapper style1">
+				<div class="container">
+					<div class="row aln-left">
+
+						<div class="col-8 col-6-large col-10-medium">
+							
+
+		<p align="justify">					
+
+Different contexts can give different meanings to code and data. For instance, in computer architecture, code and data are just bytes stored in memory. In programming, code is a set of instructions or statements that operate on data as input. These definitions are accurate but not fixed. When we do high-performance programming, we can optimize our code and data by changing how we define them. This blog illustrates a small example of how code and data are interrelated.
+
+
+							
+
+
+</p>
+
+<h2><strong>Background </strong></h2>
+
+<p align="justify">
+SpMV is an operation that multiplies a sparse matrix A with a dense vector x and stores the result in a dense vector y. A sparse matrix is a matrix that has mostly zero elements. To save space, we only store the nonzero elements of a sparse matrix. A common way to do this is using the triplet format. In this format, we use three arrays: row and col to store the coordinates of each nonzero element, and val to store the corresponding values. Figure 1 shows an example of the triplet format for matrix A. The coordinates of the nonzero elements are called the sparsity pattern, as shown by the row and col arrays in Figure 1b.
+  
+							<div class="image blog">
+							<figure>
+								<img src="images/example.png" alt="" />
+								<figcaption><i>Figure 1 - a) sparse matrix A b) the triplet format of matrix A.</i>	</figcaption>
+							</figure>
+
+							</div>
+
+ 
+
+</p>
+
+
+
+
+<h2><strong>Code vs. Data.  </strong></h2>
+<p align="justify">
+
+Figure 2 shows matrix A and three different codes for the SpMV operation on it. Each code makes a different assumption about how code and data are defined. The code in Figure 2a assumes that both the sparsity pattern and the values of the matrix can change. However, in some computer simulations, the sparsity pattern of the matrix, given by the row and col arrays, is fixed and known at compile-time. The code in Figure 2b reflects this assumption. The compile-time information can be even more extensive in sparse neural networks, where the weight matrices are constant. The code in Figure 2c incorporates the values of A as part of the code. These codes illustrate how different definitions of code and data can affect the SpMV operation. This information can be used to optimize the code in various ways, such as reordering operations or using vectorization techniques. How to best exploit this information for performance improvement is an open research problem.
+</p>
+
+<p align="justify">
+							<div class="image blog">
+							<figure>
+								<img src="images/codedataexample.png" alt="" />
+								<figcaption><i>Figure 2 - Different implementations of sparse matrix-vector multiplication for the sparse matrix A shown in Figure 1.</i>	</figcaption>
+							</figure>
+
+							</div>
+
+
+</p>
+
+<p align="justify">
+While code and data in programming are distinct in many aspects, in high-performance programming, we can treat <b> all static information as code </b> if it improves the performance.
+
+</p>
+
+
+
+
+						</div>
+					</div>
+				</div>
+			</article>
+
+
+
+
+
+
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+
+
+	</body>
+</html>
