@@ -148,11 +148,11 @@ Instead of having two loops, a single fused loop as shown below performs the sam
 
 <h2><strong>Fusion in matrix multiplication operations  </strong></h2>
 <p align="justify">
-Let’s look at a more complex case, where two matrix multiplications are performed back-to-back. Where A=BC and then Z = DA. This is a common operation in Graph Convolution Network. The following figure shows the two operations: 
+Let’s look at a more complex case, where two matrix multiplications are performed back-to-back. Where D1=BC and then D = D1A. This is a common operation in Graph Convolution Network. The following figure shows the two operations: 
 
 							<div class="image blog">
 							<figure>
-								<img src="images/tile-fusion-blog/fig2.png" alt="" />
+								<img src="images/tile-fusion-blog/fig2.svg" alt="" />
 								<figcaption><i>Figure 2 - .</i>	</figcaption>
 							</figure>
 
@@ -161,7 +161,7 @@ Let’s look at a more complex case, where two matrix multiplications are perfor
 
 							<div class="image blog">
 							<figure>
-								<img src="images/tile-fusion-blog/fig3.png" alt="" />
+								<img src="images/tile-fusion-blog/gemm_relu_code.svg" alt="" />
 								<figcaption><i>Figure 2 - .</i>	</figcaption>
 							</figure>
 
@@ -171,7 +171,7 @@ Let’s look at a more complex case, where two matrix multiplications are perfor
 </p>
 
 <p align="justify">
-In this sequence of multiplications, matrix A is used in both operations. The key difference between this setup and the earlier GEMM-RELU example is that matrix multiplication isn't an "element-wise" operation (where you simply process each number individually). Because of this, directly combining the two loops into one wouldn't produce the correct result. For instance, trying to reuse an element A[i,j] immediately after calculating it in an inner loop (k) would lead to errors. This is why these two matrix multiplications are usually performed as separate steps. 
+In this sequence of multiplications, matrix D1 is used in both operations. The key difference between this setup and the earlier GEMM-RELU example is that matrix multiplication isn't an "element-wise" operation (where you simply process each number individually). Because of this, directly combining the two loops into one wouldn't produce the correct result. For instance, trying to reuse an element D1[i1,i2] immediately after calculating it in an inner loop (i3) would lead to errors. This is why these two matrix multiplications are usually performed as separate steps. 
 
 </p>
 
@@ -179,7 +179,7 @@ In this sequence of multiplications, matrix A is used in both operations. The ke
 <h2><strong>Data-driven loop fusion with Tile Fusion   </strong></h2>
 
 <p align="justify">
-However, if matrix A in the pair of multiplication operations contains many zeros (known as a sparse matrix), we can sometimes fuse parts of the multiplications based on nonzero locations. Consider the sparse matrix example below. Here, A is shared between the two operations. Once we've calculated the first two rows of A, we can immediately use those results to calculate rows one and four of Z. 
+However, if matrix A in the pair of multiplication operations contains many zeros (known as a sparse matrix), we can sometimes fuse parts of the multiplications based on nonzero locations. Consider the sparse matrix example below. Here, D1 is shared between the two operations. Once we've calculated the first two rows of D1, we can immediately use those results to calculate rows one and three of D. 
 
 							<span class="image blog">
 							<figure>
