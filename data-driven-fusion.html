@@ -1,11 +1,4 @@
 <!DOCTYPE HTML>
-<!--
-	Miniport by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-	Modified by Kazem Cheshmi
--->
-
 <html>
 	<head>
 		<title>Data-driven Loop Fusion</title>
@@ -13,14 +6,13 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<meta name="keywords" content="Kazem Cheshmi, Mahdi Salehi, Blog, Sparse, Matrix, Math, Programming, Parallel, Compiler, Machine Learning, Graph Neural Network ">
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-178642760-1"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  gtag('config', 'UA-178642760-1');
+  gtag('config', 'UA-178642760-1');
 </script>
 
 
@@ -31,36 +23,20 @@
 	</head>
 	<body class="is-preload">
 
-		<!-- Nav -->
-
-<!-- 			<nav id="nav">
-				<ul class="container">
-					<li><a href="https://cheshmi.cc/">Home</a></li>
-					<li><a href="https://cheshmi.cc/#students">Future Students</a></li>
-					<li><a href="https://cheshmi.cc/#awards">Awards</a></li>
-					<li><a href="https://cheshmi.cc/#publications">Publications</a></li>
-					<li><a href="https://cheshmi.cc/">Blog</a></li>
-				</ul>
-			</nav> -->
-
-
-		<!-- Nav -->
-
-			<nav id="navb">
+		<nav id="navb">
 				<ul class="container">
 					<li><a href="index.html">Home</a></li>
 
 				</ul>
 			</nav>
-		<!-- Home -->
-			<article id="top" class="wrapper style2">
+		<article id="top" class="wrapper style2">
 				<div class="container">
 					<div class="row">
 
 						<div class="col-8 col-6-large col-10-medium">
 							<header>
-								<h2><strong> Data-Driven Loop Fusion  </strong></h2>
-								Mohammad Mahdi Salehi, Kazem Cheshmi, May 25
+								<h2><span style="font-weight: bold;">Data-Driven Loop Fusion</span></h2>
+								<p>Mohammad Mahdi Salehi, Kazem Cheshmi, May 25</p>
 							</header>
 
 						</div>
@@ -68,198 +44,133 @@
 				</div>
 			</article>
 
-		<!-- Work -->
-			<article id="edu" class="wrapper style1">
+		<article id="edu" class="wrapper style1">
 				<div class="container">
 					<div class="row aln-left">
 
 						<div class="col-8 col-6-large col-10-medium">
 							
+							<h2><span style="font-weight: bold;">Loop Fusion</span></h2>
 
-<h2><strong>Loop fusion  </strong></h2>
-
-	<p align="justify">					
-
-	In scientific and machine learning programs, computers often do repetitive tasks, called loops. These loops frequently need to use the same information, which is usually stored in arrays (like a list or grid of numbers). 
-
-	When a computer runs these loops one after another, it has to fetch that shared information multiple times. Imagine going to your fridge, grabbing an ingredient, putting it back, and then immediately going back to get it again for the next step of a recipe – it's inefficient! In the computer's case, "fetching" this data into its super-fast temporary memory (like caches and registers) takes a lot of time and energy. 
-
-	To make things faster, we combine these separate loops into a single, bigger loop. This way, the computer only has to grab the shared information once. This trick is called loop fusion, and it's a bit like grabbing all the ingredients you need from the fridge at once, rather than making multiple trips. Let's look at a simple example to see how much this helps. 			
-
-	</p>
+							<p align="justify">					
+							In scientific and machine learning programs, computers often do repetitive tasks, called <span style="font-weight: bold;">loops</span>. These loops frequently need to use the same information, which is usually stored in arrays (like a list or grid of numbers). 
+							When a computer runs these loops one after another, it has to fetch that shared information multiple times. Imagine going to your fridge, grabbing an ingredient, putting it back, and then immediately going back to get it again for the next step of a recipe – it's inefficient! In the computer's case, "fetching" this data into its super-fast temporary memory (like caches and registers) takes a lot of time and energy. 
+							</p>
+							<p align="justify">
+							To make things faster, we like to combine these separate loops into a single, bigger loop. This way, the computer only has to grab the shared information once. This technique is called <span style="font-weight: bold;">loop fusion</span>, and it's like grabbing all the ingredients you need from the fridge at once, rather than making multiple trips. Let's look at a simple example to see how much this helps. 			
+							</p>
 
 
-<h2><strong>Loop fusion example  </strong></h2>
+							<h2><span style="font-weight: bold;">Loop Fusion Example</span></h2>
 
-<p align="justify">
-General matrix-multiplication (GEMM) is a common operation, and in machine learning, it is often followed by an element-wise operation such as RELU. The result of matrix multiplication is then fed into the RELU, applying the non-linear transformation. The following figure shows this operation. The matrix A is shared, as indicated in the corresponding code and each operation fetches A from the memory:   
+							<p align="justify">
+							General matrix-multiplication (GEMM) is a common operation, and in machine learning, it is often followed by an element-wise operation such as RELU. The result of matrix multiplication is then fed into the RELU, applying the non-linear transformation. The following figure shows these operations with their computation code. The matrix <span style="font-style: italic;">D1</span> is shared, as indicated in the corresponding code. GEMM fetches and stores <span style="font-style: italic;">D1</span> and then RELU fetches <span style="font-style: italic;">D1</span> from the memory: 
+							</p>
 
-
-														<span class="image blog">
-							<figure>
-								<pre><code class="language-C++" >
-							 /// Computing b=A*x
-							 for(int i = 0; i < M; i++) 
-							    for(int j = 0; j < N; j++) 
-							       b[i] += A[i][j] * x[j];
-
-							 /// Solving Lx=b for x
-							 for(int i = 0; i < M; i++) {
-							    for(int j = 0; j < i; j++) 
-							       x[i] -= L[i][j] * x[j];
-							    x[i] /= L[i][i];
-							 }
-							</code></pre>
-								<figcaption><i>Listing 1 - The code for matrix multiplication (MV) and lower triangular solve (SV). </i>	</figcaption>
-							</figure>
-							</span>
-
-
-</p>
-
-
-<p align="justify">
-Instead of having two loops, a single fused loop as shown below performs the same operation by fetching the shared matrix A once and reusing it twice:   
-
-
-							<span class="image blog">
-							<figure>
-								<pre><code class="language-C++" >
-							 /// Computing b=A*x
-							 for(int i = 0; i < M; i++) 
-							    for(int j = 0; j < N; j++) 
-							       b[i] += A[i][j] * x[j];
-
-							 /// Solving Lx=b for x
-							 for(int i = 0; i < M; i++) {
-							    for(int j = 0; j < i; j++) 
-							       x[i] -= L[i][j] * x[j];
-							    x[i] /= L[i][i];
-							 }
-							</code></pre>
-								<figcaption><i>Listing 1 - The code for matrix multiplication (MV) and lower triangular solve (SV). </i>	</figcaption>
-							</figure>
-							</span>
-
-
-</p>
-
-
-
-<h2><strong>Fusion in matrix multiplication operations  </strong></h2>
-<p align="justify">
-Let’s look at a more complex case, where two matrix multiplications are performed back-to-back. Where D1=BC and then D = D1A. This is a common operation in Graph Convolution Network. The following figure shows the two operations: 
-
-							<div class="image blog">
-							<figure>
-								<img src="images/tile-fusion-blog/fig2.svg" alt="" />
-								<figcaption><i>Figure 2 - .</i>	</figcaption>
-							</figure>
-
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 60%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/gemm_relu_fig.svg" alt="GEMM and RELU computation" style="max-width: 100%; height: auto;" />
+									<figcaption><i> </i></figcaption>
+								</figure>
 							</div>
 
 
-							<div class="image blog">
-							<figure>
-								<img src="images/tile-fusion-blog/gemm_relu_code.svg" alt="" />
-								<figcaption><i>Figure 2 - .</i>	</figcaption>
-							</figure>
 
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 70%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/gemm_relu_code.svg" alt="GEMM and RELU code" style="max-width: 100%; height: auto;" />
+									<figcaption><i>GEMM and RELU computation share matrix D1. Each operation accesses <span style="font-style: italic;">D1</span> seperately. </i></figcaption>
+								</figure>
 							</div>
 
 
-</p>
+							<p align="justify">
+							Instead of having two loop nests, a single fused loop as shown below performs the same operation by fetching a vector of the shared matrix <span style="font-style: italic;">D1</span> once into the fast memory and reusing the vector in the second computation, i.e. RELU: 
+							</p>
 
-<p align="justify">
-In this sequence of multiplications, matrix D1 is used in both operations. The key difference between this setup and the earlier GEMM-RELU example is that matrix multiplication isn't an "element-wise" operation (where you simply process each number individually). Because of this, directly combining the two loops into one wouldn't produce the correct result. For instance, trying to reuse an element D1[i1,i2] immediately after calculating it in an inner loop (i3) would lead to errors. This is why these two matrix multiplications are usually performed as separate steps. 
-
-</p>
-
-
-<h2><strong>Data-driven loop fusion with Tile Fusion   </strong></h2>
-
-<p align="justify">
-However, if matrix A in the pair of multiplication operations contains many zeros (known as a sparse matrix), we can sometimes fuse parts of the multiplications based on nonzero locations. Consider the sparse matrix example below. Here, D1 is shared between the two operations. Once we've calculated the first two rows of D1, we can immediately use those results to calculate rows one and three of D. 
-
-							<span class="image blog">
-							<figure>
-								<pre><code class="language-C++" >
-							 /// Computing b=A*x
-							 for(int i = 0; i < M; i++) 
-							    for(int j = 0; j < N; j++) 
-							       b[i] += A[i][j] * x[j];
-
-							 /// Solving Lx=b for x
-							 for(int i = 0; i < M; i++) {
-							    for(int j = 0; j < i; j++) 
-							       x[i] -= L[i][j] * x[j];
-							    x[i] /= L[i][i];
-							 }
-							</code></pre>
-								<figcaption><i>Listing 1 - The code for matrix multiplication (MV) and lower triangular solve (SV). </i>	</figcaption>
-							</figure>
-							</span>
-
-
-</p>
-
-
-<p align="justify">
-	
-This type of fusion is contingent on the sparsity of the input matrices, making it a data-driven loop fusion technique. This property is commonly observed in sparse matrices used in graph neural networks and scientific computing. The figure below illustrates the degree of computation sharing possible across SuiteSparse matrices, a widely used collection in scientific and graph applications. As evident, a significant portion of computations in most matrices share data and operations, presenting clear opportunities for loop fusion. 
-
-							<div class="image blog">
-							<figure>
-								<img src="images/sympiler_lbc40.png" alt="" />
-								<figcaption><i>Figure 2 - The performance of a parallel loop (MV) versus a loop-carried dependence (SV) on 40 Intel Skylake cores for a set of dense (a) and sparse matrices (b)-(c).</i>	</figcaption>
-							</figure>
-
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 60%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/gemm_relu_fused.svg" alt="Fused GEMM and RELU computation" style="max-width: 100%; height: auto;" />
+								</figure>
 							</div>
 
-</p>
-
-<p align="justify">
-	
-However, fully leveraging this property necessitates ensuring data dependencies between operations, coupled with an efficient scheduling mechanism that interleaves iterations with shared data. Tile Fusion, a recent work by Salehi and Cheshmi accepted at ICS'25, proposes a domain-specific compiler designed to enable data-driven fusion in machine learning and scientific computing. Tile Fusion first creates tiles and then selectively enables fusion within those tiles that do not violate data dependencies, thereby ensuring full utilization of computing resources on both CPUs and GPUs. Consequently, Tile Fusion has demonstrated significant improvements in GNN training, achieving speedups of up to 3.84x and a geometric mean (gmean) of 2.33x. For further details on Tile Fusion and its implementation, please refer to the paper and code repository linked below: 
-
- 
-
-
-
-</p>
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 80%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/gemm_relu_fused_code.svg" alt="Fused GEMM and RELU code" style="max-width: 100%; height: auto;" />
+									<figcaption><i>Fused GEMM and RELU computation where a vector of <span style="font-style: italic;">D1</span> is reused between the two computation. </i></figcaption>
+								</figure>
+							</div>
+							Other fusion opportunities can be explored such as when loops <i> i2, j2 </i> are fused which is not discussed here. 
 
 
-<p align="justify">
-	
- 
+							<h2><span style="font-weight: bold;">Fusion in Matrix Multiplication Operations</span></h2>
+							<p align="justify">
+							Let’s look at a more complex case, where two matrix multiplications are performed back-to-back. Where <span style="font-style: italic;">D1=B*C</span> and then <span style="font-style: italic;">D = A*D1</span>. This is a common operation in Graph Convolution Networks. The following figure shows the two operations: 
+							</p>
+							
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 60%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/gemm_gemm_fig.svg" alt="Two matrix multiplications" style="max-width: 100%; height: auto;" />
+									<figcaption><i></i></figcaption>
+								</figure>
+							</div>
 
-Tile fusion paper: https://www.cheshmi.cc/KazemCheshmi_files/tile_fusion_ics25.pdf 
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 70%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/gemm_gemm_code.svg" alt="Code for two matrix multiplications" style="max-width: 100%; height: auto;" />
+									<figcaption><i>Code for two matrix multiplications</i></figcaption>
+								</figure>
+							</div>
 
-Tile fusion repository: https://github.com/SwiftWare-Lab/tile-fusion 
+							<p align="justify">
+							In this sequence of multiplications, matrix <span style="font-style: italic;">D1</span> is used in both operations. The key difference between this setup and the earlier GEMM-RELU example is that matrix multiplication isn't an "element-wise" operation (where the computations can safely share a vector of <span style="font-style: italic;">D1</span> between each other). Because of this, directly combining the two loops into one wouldn't produce the correct result. For instance, trying to reuse an element <span style="font-style: italic;">D1[i1,i3]</span> immediately after calculating it in the inner loop (<span style="font-style: italic;">i3</span>) would lead to incorrect results. This is why these two matrix multiplications are usually performed as separate steps. 
+							</p>
 
 
-</p>
+							<h2><span style="font-weight: bold;">Data-Driven Loop Fusion with Tile Fusion</span></h2>
+
+							<p align="justify">
+							However, if matrix <span style="font-style: italic;">A</span> in the pair of multiplication operations contains many zeros (known as a <span style="font-weight: bold;">sparse matrix</span>), we can sometimes fuse parts of the multiplications based on nonzero locations. Consider the sparse matrix example below. Here, <span style="font-style: italic;">D1</span> is shared between the two operations. Once we've calculated the first two rows of <span style="font-style: italic;">D1</span>, we can immediately use those results to calculate rows one and four of <span style="font-style: italic;">Z</span>. 
+							</p>
+							
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 60%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/gemm_spmm.svg" alt="Sparse matrix example" style="max-width: 100%; height: auto;" />
+									<figcaption><i>Sparse matrix example with shared A</i></figcaption>
+								</figure>
+							</div>
+
+							<p align="justify">
+							This type of fusion is contingent on the sparsity of the input matrices, making it a <span style="font-weight: bold;">data-driven loop fusion</span> technique. This property is commonly observed in sparse matrices used in graph neural networks and scientific computing. The figure below illustrates the degree of computation sharing possible across SuiteSparse matrices, a widely used collection in scientific and graph applications. As evident, a significant portion of computations in most matrices share data and operations, presenting clear opportunities for loop fusion. 
+							</p>
+							
+							<div class="image blog" style="text-align: center;">
+								<figure style="width: 60%; margin: 0 auto;">
+									<img src="images/tile-fusion-blog/fused_ratio.png" alt="Fused ratio across sparse matrices and graphs" style="max-width: 100%; height: auto;" />
+									<figcaption><i>Fused ratio across sparse matrices and graphs</i></figcaption>
+								</figure>
+							</div>
+
+							<p align="justify">
+							However, fully leveraging this property necessitates ensuring data dependencies between operations, coupled with an efficient scheduling mechanism that interleaves iterations with shared data. <span style="font-weight: bold;">Tile Fusion</span>, a recent work by Salehi and Cheshmi accepted at <a href="https://hpcrl.github.io/ICS2025-webpage/program/program.html"> ICS'25</a>, proposes a domain-specific compiler designed to enable data-driven fusion in machine learning and scientific computing. Tile Fusion first creates tiles and then selectively enables fusion within those tiles that do not violate data dependencies, thereby ensuring full utilization of computing resources on both CPUs and GPUs. Consequently, Tile Fusion has demonstrated significant improvements in GNN training, achieving speedups of up to <span style="font-weight: bold;">3.84x</span> and a geometric mean (gmean) of <span style="font-weight: bold;">2.33x</span>. For further details on Tile Fusion and its implementation, please refer to the paper and code repository linked below: 
+							</p>
+
+							<p align="justify">
+							Tile Fusion paper: <a href="https://www.cheshmi.cc/KazemCheshmi_files/tile_fusion_ics25.pdf">https://www.cheshmi.cc/KazemCheshmi_files/tile_fusion_ics25.pdf</a><br>
+							Tile Fusion code repository: <a href="https://github.com/SwiftWare-Lab/tile-fusion">https://github.com/SwiftWare-Lab/tile-fusion</a>
+							</p>
 
 						</div>
 					</div>
 				</div>
 			</article>
 
-
-
-
-
-
-
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.min.js"></script>
 			<script src="assets/js/jquery.scrolly.min.js"></script>
 			<script src="assets/js/browser.min.js"></script>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
-
-
 
 	</body>
 </html>
