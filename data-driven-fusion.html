@@ -79,13 +79,13 @@
 							<div class="image blog" style="text-align: center;">
 								<figure style="width: 70%; margin: 0 auto;">
 									<img src="images/tile-fusion-blog/gemm_relu_code.svg" alt="GEMM and RELU code" style="max-width: 100%; height: auto;" />
-									<figcaption><i>GEMM and RELU computation share matrix D1. Each operation accesses <span style="font-style: italic;">D1</span> seperately. </i></figcaption>
+									<figcaption><i>GEMM and RELU computation share matrix D1. Each operation accesses <span style="font-style: italic;">D1</span> separately. </i></figcaption>
 								</figure>
 							</div>
 
 
 							<p align="justify">
-							Instead of having two loop nests, a single fused loop as shown below performs the same operation by fetching a vector of the shared matrix <span style="font-style: italic;">D1</span> once into the fast memory and reusing the vector in the second computation, i.e. RELU: 
+							Instead of having two loop nests, a single fused loop as shown below performs the same operation by fetching vector <i> d </i> from the shared matrix <span style="font-style: italic;">D1</span> once into the fast memory and reusing the vector in the second computation, i.e. RELU: 
 							</p>
 
 							<div class="image blog" style="text-align: center;">
@@ -97,7 +97,7 @@
 							<div class="image blog" style="text-align: center;">
 								<figure style="width: 80%; margin: 0 auto;">
 									<img src="images/tile-fusion-blog/gemm_relu_fused_code.svg" alt="Fused GEMM and RELU code" style="max-width: 100%; height: auto;" />
-									<figcaption><i>Fused GEMM and RELU computation where a vector of <span style="font-style: italic;">D1</span> is reused between the two computation. </i></figcaption>
+									<figcaption><i>Fused GEMM and RELU computation where a row of <span style="font-style: italic;">D1</span> is fetched once, i.e., <i> d </i>, and reused between the two computations. </i></figcaption>
 								</figure>
 							</div>
 							Other fusion opportunities can be explored such as when loops <i> i2, j2 </i> are fused which is not discussed here. 
@@ -118,30 +118,30 @@
 							<div class="image blog" style="text-align: center;">
 								<figure style="width: 70%; margin: 0 auto;">
 									<img src="images/tile-fusion-blog/gemm_gemm_code.svg" alt="Code for two matrix multiplications" style="max-width: 100%; height: auto;" />
-									<figcaption><i>Code for two matrix multiplications</i></figcaption>
+									<figcaption><i>A pair of matrix multiplications, D1=B*C and D = A*D1, and their corresponding code. Immediate reuse of a row of D1 leads to incorrect results. </i></figcaption>
 								</figure>
 							</div>
 
 							<p align="justify">
-							In this sequence of multiplications, matrix <span style="font-style: italic;">D1</span> is used in both operations. The key difference between this setup and the earlier GEMM-RELU example is that matrix multiplication isn't an "element-wise" operation (where the computations can safely share a vector of <span style="font-style: italic;">D1</span> between each other). Because of this, directly combining the two loops into one wouldn't produce the correct result. For instance, trying to reuse an element <span style="font-style: italic;">D1[i1,i3]</span> immediately after calculating it in the inner loop (<span style="font-style: italic;">i3</span>) would lead to incorrect results. This is why these two matrix multiplications are usually performed as separate steps. 
+							In this sequence of multiplications, matrix <span style="font-style: italic;">D1</span> is used in both operations. The key difference between this setup and the earlier GEMM-RELU example is that matrix multiplication isn't an "element-wise" operation (where the computations can safely share a vector of <span style="font-style: italic;">D1</span> between each other). Because of this, directly combining the two loops into one wouldn't produce the correct result. For instance, trying to reuse an element <span style="font-style: italic;">D1[i1,i3]</span> immediately after calculating it in the inner loop (<span style="font-style: italic;">i3</span>) would lead to incorrect results. Because, all rows of <i> D1 </i> are needed to compute a row of <i> D </i>. This is why these two matrix multiplications are usually performed separately. 
 							</p>
 
 
 							<h2><span style="font-weight: bold;">Data-Driven Loop Fusion with Tile Fusion</span></h2>
 
 							<p align="justify">
-							However, if matrix <span style="font-style: italic;">A</span> in the pair of multiplication operations contains many zeros (known as a <span style="font-weight: bold;">sparse matrix</span>), we can sometimes fuse parts of the multiplications based on nonzero locations. Consider the sparse matrix example below. Here, <span style="font-style: italic;">D1</span> is shared between the two operations. Once we've calculated the first two rows of <span style="font-style: italic;">D1</span>, we can immediately use those results to calculate rows one and four of <span style="font-style: italic;">Z</span>. 
+							However, if matrix <span style="font-style: italic;">A</span> in the pair of multiplication operations contains many zeros (known as a <span style="font-weight: bold;">sparse matrix</span>), we can sometimes fuse parts of the multiplications based on nonzero locations. Consider the sparse matrix example below. Here, <span style="font-style: italic;">D1</span> is shared between the two operations. Once we've calculated the first two rows of <span style="font-style: italic;">D1</span>, we can immediately use those results to calculate rows one and three of <span style="font-style: italic;">D</span>. 
 							</p>
 							
 							<div class="image blog" style="text-align: center;">
 								<figure style="width: 60%; margin: 0 auto;">
 									<img src="images/tile-fusion-blog/gemm_spmm.svg" alt="Sparse matrix example" style="max-width: 100%; height: auto;" />
-									<figcaption><i>Sparse matrix example with shared A</i></figcaption>
+									<figcaption><i>A pair of matrix multiplications, D1=B*C and D = A*D1 where A is a sparse matrix. The first two rows of D1 can be reused due to the specific A sparsity pattern.  </i></figcaption>
 								</figure>
 							</div>
 
 							<p align="justify">
-							This type of fusion is contingent on the sparsity of the input matrices, making it a <span style="font-weight: bold;">data-driven loop fusion</span> technique. This property is commonly observed in sparse matrices used in graph neural networks and scientific computing. The figure below illustrates the degree of computation sharing possible across SuiteSparse matrices, a widely used collection in scientific and graph applications. As evident, a significant portion of computations in most matrices share data and operations, presenting clear opportunities for loop fusion. 
+							This type of fusion is driven by data, i.e., the sparsity pattern of the input matrices, making it a <span style="font-weight: bold;">data-driven loop fusion</span> technique. This property is commonly observed in sparse matrices used in graph neural networks and scientific computing. The figure below illustrates the degree of computation sharing possible across SuiteSparse matrices, a widely used collection in scientific and graph applications. As evident, a significant portion of computations in most matrices share data and operations, presenting clear opportunities for loop fusion. 
 							</p>
 							
 							<div class="image blog" style="text-align: center;">
