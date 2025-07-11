@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sparsification for Efficient Solutions of Linear Systems</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="keywords" content="Kazem Cheshmi, Blog, Sparse, Matrix, Math, Programming, Parallel, Compiler">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-178642760-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-178642760-1');
+    </script>
+
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h2 {
+            color: #0056b3;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        .image-placeholder {
+            border: 1px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+        }
+        .image-placeholder img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+    </style>
+</head>
+<body class="is-preload">
+
+    <nav id="navb">
+        <ul class="container">
+            <li><a href="index.html">Home</a></li>
+        </ul>
+    </nav>
+
+    <article id="top" class="wrapper style2">
+        <div class="container">
+            <div class="row">
+                <div class="col-8 col-6-large col-10-medium">
+                    <header>
+                        <h2><strong>Sparsification for Efficient Solutions of Linear Systems</strong></h2>
+                        Da Ma, Kazem Cheshmi, July 25
+                    </header>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <article id="edu" class="wrapper style1">
+        <div class="container">
+            <div class="row aln-left">
+                <div class="col-8 col-6-large col-10-medium">
+
+                    <em>* Based on paper: "Sparsified Preconditioned Conjugate Gradient Solver on GPUs" by Da Ma, Khalid Ahmad, Kazem Cheshmi, Hari Sundar, and Mary Hall at SC'25</em>
+
+                    <h2>Efficient Solutions for Linear Systems</h2>
+                    <p>Solving a linear system, Ax=b, is a fundamental task in numerous applications where A is a square matrix, x is an unknown vector, and b is a known vector. This computation often consumes the majority of simulation time. Broadly, there are two general approaches to solving such systems: direct methods and iterative methods.</p>
+                    <p>Direct methods decompose the problem into easier-to-solve linear systems, such as triangular systems. While accurate, these approaches typically demand significant memory to store the decomposed systems and can be computationally expensive due to their cubic complexity.</p>
+
+                    <h2>Iterative Methods and Preconditioning</h2>
+                    <p>Iterative methods begin with an initial guess and progressively refine the solution until a predefined accuracy is achieved. Each iteration of these solvers often performs a projection. Depending on the computations involved in each iteration, these methods offer a compromise between memory usage and computational cost. Some iterative methods primarily rely on matrix-vector multiplications, while others depend on more complex computations like triangular solvers. The latter category computes a triangular system as a preconditioner before the solve phase. This preconditioning accelerates convergence but incurs the cost of storing the triangular factor and introduces dependencies in its solution.</p>
+
+                    <h2>Addressing Preconditioner Bottlenecks</h2>
+                    <p>A simple Preconditioned Conjugate Gradient (PCG) pseudo-code is illustrated in Figure 1, where the triangular solver is applied as a preconditioner. The iterations of the preconditioner can be modeled as a computation-directed acyclic graph (DAG), where vertices represent iterations and edges signify dependencies between them. The preconditioner often becomes a bottleneck because the inherent dependencies between iterations limit the effective utilization of parallel resources, especially on GPUs. We use a simple matrix A, shown in Figure X, to illustrate the impact of these dependencies on parallelism.</p>
+
+                    <div class="image-placeholder">
+                        <img src="placeholder-figure-1.png" alt="Placeholder for PCG Pseudo-code">
+                        <p>Figure 1: Simple Preconditioned Conjugate Gradient (PCG) pseudo-code.</p>
+                    </div>
+                    <div class="image-placeholder">
+                        <img src="placeholder-figure-x.png" alt="Placeholder for Matrix A">
+                        <p>Figure X: A simple matrix A illustrating the impact of dependencies on parallelism.</p>
+                    </div>
+
+                    <p>One common approach to decomposing the input matrix into triangular systems is to use its lower and upper parts. Solving these two triangular systems provides an estimate for the solution of the linear system. To better exploit parallel resources, independent iterations of the triangular solver can run concurrently. An example of parallel iterations is shown in Figure Y. All vertices between two solid lines form a wavefront, which comprises independent iterations that can run in parallel. While these iterations run in parallel within each wavefront, synchronization is required between wavefronts.</p>
+
+                    <div class="image-placeholder">
+                        <img src="placeholder-figure-y.png" alt="Placeholder for Parallel Iterations/Wavefronts">
+                        <p>Figure Y: An example of parallel iterations organized into wavefronts.</p>
+                    </div>
+
+                    <h2>Sparsified Conjugate Gradient (SPCG)</h2>
+                    <p>If we can eliminate certain non-zero entries (e.g., f), the number of wavefronts can be reduced, leading to increased parallelism. However, removing such entries might cause convergence issues, even as it enhances parallelism. If the value of f is sufficiently small, its removal will not significantly affect convergence while still improving parallel execution. This technique is known as sparsification, and the resulting Conjugate Gradient (CG) variant is referred to as Sparsified CG (SPCG).</p>
+                    <p>SPCG applies a sparsification algorithm where small values are dropped if they reduce the number of wavefronts. An Incomplete LU factorization with zero fill-in (ILU0) preconditioner is then applied to the sparsified matrix. The resulting triangular systems after sparsification are smaller with fewer wavefronts, significantly improving the end-to-end performance of the linear solver by up to YY times, with a geometric mean average of YY. Figure YY illustrates the performance of SPCG across various applications. As shown, the speedup varies across different domains, but SPCG generally performs well, except YY. For more detailed information about SPCG, please refer to <a href="https://www.cheshmi.cc/KazemCheshmi_files/SPCG_sc25.pdf">SPCG paper</a>, a collaborative work by Da Ma, Khalid, Kazem Cheshmi, Hari Sundar, and Mary Hall, researchers from McMaster University and the University of Utah.</p>
+
+                    <div class="image-placeholder">
+                        <img src="placeholder-figure-yy.png" alt="Placeholder for SPCG Performance">
+                        <p>Figure YY: Performance of SPCG across a range of applications.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.scrolly.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+
+</body>
+</html>
