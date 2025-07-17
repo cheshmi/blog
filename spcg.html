@@ -46,6 +46,13 @@
             display: block;
             margin: 0 auto 10px auto;
         }
+        /* .image-placeholder p {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .image-placeholder:nth-last-child(-n+2) p {
+            text-align: left;
+        } */
     </style>
 </head>
 <body class="is-preload">
@@ -84,31 +91,34 @@
                     <p>Iterative methods begin with an initial guess and progressively refine the solution until a predefined accuracy is achieved. Each iteration of these solvers often performs a projection. Depending on the computations involved in each iteration, these methods offer a compromise between memory usage and computational cost. Some iterative methods primarily rely on matrix-vector multiplications, while others depend on more complex computations like triangular solvers. The latter category computes a triangular system as a preconditioner before the solve phase. This preconditioning accelerates convergence but incurs the cost of storing the triangular factor and introduces dependencies in its solution.</p>
 
                     <h2>Addressing Preconditioner Bottlenecks</h2>
-                    <p>A simple Preconditioned Conjugate Gradient (PCG) pseudo-code is illustrated in Figure 1, where the triangular solver is applied as a preconditioner. The iterations of the preconditioner can be modeled as a computation-directed acyclic graph (DAG), where vertices represent iterations and edges signify dependencies between them. The preconditioner often becomes a bottleneck because the inherent dependencies between iterations limit the effective utilization of parallel resources, especially on GPUs. We use a simple matrix A, shown in Figure X, to illustrate the impact of these dependencies on parallelism.</p>
+                    <p>A simple Preconditioned Conjugate Gradient (PCG) pseudo-code is illustrated in Figure 1, where the triangular solver is applied as a preconditioner. The iterations of the preconditioner can be modeled as a computation-directed acyclic graph (DAG), where vertices represent iterations and edges signify dependencies between them. The preconditioner often becomes a bottleneck because the inherent dependencies between iterations limit the effective utilization of parallel resources, especially on GPUs. We use a simple matrix A, shown in Figure 2, to illustrate the impact of these dependencies on parallelism.</p>
 
                     <div class="image-placeholder">
-                        <img src="placeholder-figure-1.png" alt="Placeholder for PCG Pseudo-code">
-                        <p>Figure 1: Simple Preconditioned Conjugate Gradient (PCG) pseudo-code.</p>
+                        <img src="images/spcg-blog/pcg_alg.jpg" alt="PCG Pseudo-code" style="max-width: 100%; height: auto;">
+                        <p>Figure 1: Preconditioned Conjugate Gradient (PCG) pseudo-code.</p>
                     </div>
                     <div class="image-placeholder">
-                        <img src="placeholder-figure-x.png" alt="Placeholder for Matrix A">
-                        <p>Figure X: A simple matrix A illustrating the impact of dependencies on parallelism.</p>
+                        <img src="images/spcg-blog/matrix_demo.jpg" alt="Matrix A Demo" style="max-width: 100%; height: auto;">
+                        <!-- <p>Figure 2: A simple matrix A illustrating the impact of dependencies on parallelism.</p> -->
+                        <p>Figure 2: Sparsification effect on matrix structure and storage format.</p>
                     </div>
 
-                    <p>One common approach to decomposing the input matrix into triangular systems is to use its lower and upper parts. Solving these two triangular systems provides an estimate for the solution of the linear system. To better exploit parallel resources, independent iterations of the triangular solver can run concurrently. An example of parallel iterations is shown in Figure Y. All vertices between two solid lines form a wavefront, which comprises independent iterations that can run in parallel. While these iterations run in parallel within each wavefront, synchronization is required between wavefronts.</p>
+                    <p>One common approach to decomposing the input matrix into triangular systems is to use its lower and upper parts. Solving these two triangular systems provides an estimate for the solution of the linear system. To better exploit parallel resources, independent iterations of the triangular solver can run concurrently. An example of parallel iterations is shown in Figure 3. All vertices between two dotted lines form a wavefront, which comprises independent iterations that can run in parallel. While these iterations run in parallel within each wavefront, synchronization is required between wavefronts.</p>
 
                     <div class="image-placeholder">
-                        <img src="placeholder-figure-y.png" alt="Placeholder for Parallel Iterations/Wavefronts">
-                        <p>Figure Y: An example of parallel iterations organized into wavefronts.</p>
+                        <img src="images/spcg-blog/wavefront_demo_ab.jpg" alt="Wavefront Demo" style="max-width: 100%; height: auto;">
+                        <!-- <p>Figure 3: An example of parallel iterations organized into wavefronts.</p> -->
+                        <p>Figure 3: Wavefront parallelism and dependency reduction through sparsification.</p>
                     </div>
 
                     <h2>Sparsified Conjugate Gradient (SPCG)</h2>
                     <p>If we can eliminate certain non-zero entries (e.g., f), the number of wavefronts can be reduced, leading to increased parallelism. However, removing such entries might cause convergence issues, even as it enhances parallelism. If the value of f is sufficiently small, its removal will not significantly affect convergence while still improving parallel execution. This technique is known as sparsification, and the resulting Conjugate Gradient (CG) variant is referred to as Sparsified CG (SPCG).</p>
-                    <p>SPCG applies a sparsification algorithm where small values are dropped if they reduce the number of wavefronts. An Incomplete LU factorization with zero fill-in (ILU0) preconditioner is then applied to the sparsified matrix. The resulting triangular systems after sparsification are smaller with fewer wavefronts, significantly improving the end-to-end performance of the linear solver by up to YY times, with a geometric mean average of YY. Figure YY illustrates the performance of SPCG across various applications. As shown, the speedup varies across different domains, but SPCG generally performs well, except YY. For more detailed information about SPCG, please refer to <a href="https://www.cheshmi.cc/KazemCheshmi_files/SPCG_sc25.pdf">SPCG paper</a>, a collaborative work by Da Ma, Khalid, Kazem Cheshmi, Hari Sundar, and Mary Hall, researchers from McMaster University and the University of Utah.</p>
+                    <p>SPCG applies a sparsification algorithm where small values are dropped if they reduce the number of wavefronts. An Incomplete LU factorization with zero fill-in (ILU0) preconditioner is then applied to the sparsified matrix. The resulting triangular systems after sparsification are smaller with fewer wavefronts, significantly improving the end-to-end performance of the linear solver by up to 4.66 times, with a geometric mean average of 1.23. Figure 4 illustrates the performance of SPCG across various applications. As shown, the speedup varies across different domains, but SPCG generally performs well, with only a few counter-example cases seeing limited benefits. Conversely, economic modeling, duplicate-optimization, and circuit-simulation workloads show some of the most dramatic speedups, consistently delivering large end-to-end gains.</p>
+                    <p>For more detailed information about SPCG, please refer to <a href="https://www.cheshmi.cc/KazemCheshmi_files/SPCG_sc25.pdf">SPCG paper</a>, a collaborative work by Da Ma, Khalid, Kazem Cheshmi, Hari Sundar, and Mary Hall, researchers from McMaster University and the University of Utah.</p>
 
                     <div class="image-placeholder">
-                        <img src="placeholder-figure-yy.png" alt="Placeholder for SPCG Performance">
-                        <p>Figure YY: Performance of SPCG across a range of applications.</p>
+                        <img src="images/spcg-blog/application_e2e.jpg" alt="Application E2E Performance" style="max-width: 100%; height: auto;">
+                        <p>Figure 4: SPCG-ILU(0) speedup over PCG across applications.</p>
                     </div>
 
                 </div>
