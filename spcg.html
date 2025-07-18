@@ -96,9 +96,11 @@
                     <p> A preconditioner-based solver, Preconditioned Conjugate Gradient (PCG), pseudo-code is illustrated in Figure 1. The highlighted lines show where the preconditioner (triangular systems) is computed and later applied in the solve phase. This preconditioning accelerates convergence but incurs the cost of storing the triangular factor and introduces dependencies in its solution. Applying and computing the preconditioner often becomes a bottleneck because the inherent dependencies between iterations limit the effective utilization of parallel resources, especially on GPUs.</p>
 
 
-                    <div>
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 80%; margin: 0 auto;">
                         <img src="images/spcg-blog/pcg_alg_simple.png" alt="PCG Pseudo-code" style="max-width: 100%; height: auto;">
-                        <p>Figure 1: Preconditioned Conjugate Gradient (PCG) pseudo-code.</p>
+                        <figcaption><i>Figure 1: Preconditioned Conjugate Gradient (PCG) pseudo-code.</i></figcaption>
+                        </figure>
                     </div>
 
                     <h2>Addressing Preconditioner Bottlenecks</h2>
@@ -106,24 +108,31 @@
 
 
                     
-                    <div >
-                        <img src="images/spcg-blog/matrix_demo.jpg" alt="Matrix A Demo" style="max-width: 35%; height: auto;">
-                        <!-- <p>Figure 2: A simple matrix A illustrating the impact of dependencies on parallelism.</p> -->
-                        <p>Figure 2: An example sparse lower triangular matrix.</p>
-                    </div>
+                    
 
                     <p>One common preconditioning approach to decomposing the input matrix into triangular systems is to use its lower and upper parts. Solving these two triangular systems provides an estimate for the solution of the linear system, while also ensuring that the memory usage of the preconditioner stays within the bounds of the input matrix. To better exploit parallel resources, our goal is to exploit possible parallelism despite the dependencies that exist between iterations. </p>
 
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 35%; margin: 0 auto;">
+                        <img src="images/spcg-blog/matrix_demo.jpg" alt="Matrix A Demo" style="max-width: 100%; height: auto;">
+                        <!-- <p>Figure 2: A simple matrix A illustrating the impact of dependencies on parallelism.</p> -->
+                        <figcaption><i>Figure 2: An example sparse lower triangular matrix.</i></figcaption>
+                        </figure>
+                    </div>
+
                     <p>
-                    We use a simple lower triangular matrix, shown in Figure 2, to illustrate the impact of these dependencies on parallelism. To illustrate the dependencies between iterations and their impact on parallelization, we utilize a graph visualization. The iterations of computing and applying the preconditioner (highlighted lines in Figure 1) can be modeled as a directed acyclic graph (DAG), where vertices represent iterations and edges signify dependencies between them. An example of this DAG and potential parallel iterations is shown in Figure 3a. All vertices between two dotted lines form a wavefront, which is composed of independent iterations that can run in parallel. While these iterations run in parallel within each wavefront, synchronization is required between wavefronts. For example, three synchronization barriers are needed for the graph in Figure 3a.
-                       </p>
+                    We use a simple lower triangular matrix, shown in Figure 2, to illustrate the impact of these dependencies on parallelism. To illustrate the dependencies between iterations and their impact on parallelization, we utilize a graph visualization. The iterations of computing and applying the preconditioner (highlighted lines in Figure 1) can be modeled as a directed acyclic graph (DAG), where vertices represent iterations and edges signify dependencies between them. An example of this DAG and potential parallel iterations is shown in Figure 3a. All vertices between two dotted lines form a wavefront, which is composed of independent iterations that can run in parallel. While these iterations run in parallel within each wavefront, synchronization is required between wavefronts. For example, three synchronization barriers are needed for the graph in Figure 3a.</p>
 
 
-                    <div >
+
+
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 100%; margin: 0 auto;">
                         <img src="images/spcg-blog/wavefront_demo_ab.jpg" alt="Wavefront Demo" style="max-width: 100%; height: auto;">
                         <!-- <p>Figure 3: An example of parallel iterations organized into wavefronts.</p> -->
-                        <p>Figure 3: 
-                        (a) Wavefront parallelism enables partial parallelism for independent iterations. (b) sparsification reduces synchronization and improve parallel iterations.</p>
+                        <figcaption><i>Figure 3: 
+                        (a) Wavefront parallelism enables partial parallelism for independent iterations. (b) sparsification reduces synchronization and improve parallel iterations.</i></figcaption>
+                        </figure>
 
                     </div>
 
@@ -132,9 +141,11 @@
 
                     <p>SPCG applies a sparsification algorithm where small values are dropped if they reduce the number of wavefronts. An Incomplete LU factorization with zero fill-in (ILU0) preconditioner is then applied to the sparsified matrix. The resulting triangular systems after sparsification are smaller with fewer wavefronts, significantly improving the end-to-end performance of the linear solver by up to 4.66 times, with a geometric mean of 1.23 times. Figure 4 illustrates the performance of SPCG across various applications. As shown, the speedup varies across different domains, but SPCG generally performs well, with only a few counter-examples showing limited benefits. Conversely, economic modeling, duplicate-optimization, and circuit-simulation workloads show some of the most dramatic speedups, consistently delivering large end-to-end gains.</p>
 
-                    <div >
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 80%; margin: 0 auto;">
                         <img src="images/spcg-blog/application_e2e.jpg" alt="Application E2E Performance" style="max-width: 100%; height: auto;">
-                        <p>Figure 4: SPCG-ILU(0) speedup over PCG across applications.</p>
+                        <figcaption><i>Figure 4: SPCG-ILU(0) speedup over PCG across applications.</i></figcaption>
+                        </figure>
                     </div>
 
                     <p>For more detailed information about SPCG, please refer to the <a href="https://www.cheshmi.cc/KazemCheshmi_files/SPCG_sc25.pdf">SPCG paper</a>, a collaborative work by Da Ma, Khalid Ahmad, Kazem Cheshmi, Hari Sundar, and Mary Hall, researchers from McMaster University and the University of Utah.</p>
