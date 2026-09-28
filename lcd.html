@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>How Smart Compilers Unleash GPUs for Scientific Solvers?</title>
+    <title>How Smart Compilers Unleash GPUs for Scientific Solvers</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-    <meta name="keywords" content="Kazem Cheshmi, Blog, Sparse, Matrix, Math, Programming, Parallel, Compiler">
+    <meta name="keywords" content="Kazem Cheshmi, Blog, Sparse Matrix, Math, Programming, Parallel, Compiler, GPU, CUDA">
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-178642760-1"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -46,13 +47,6 @@
             display: block;
             margin: 0 auto 10px auto;
         }
-        /* .image-placeholder p {
-            text-align: center;
-            margin-top: 10px;
-        }
-        .image-placeholder:nth-last-child(-n+2) p {
-            text-align: left;
-        } */
     </style>
 </head>
 <body class="is-preload">
@@ -68,8 +62,8 @@
             <div class="row">
                 <div class="col-8 col-6-large col-10-medium">
                     <header>
-                        <h2><strong>How Smart Compilers Unleash GPUs for Scientific Solvers?</strong></h2>
-                        Mehdi Salehi, Da Ma, and Kazem Cheshmi <br> Sep 26
+                        <h2><strong>How Smart Compilers Unleash GPUs for Scientific Solvers</strong></h2>
+                        <p class="meta">Mehdi Salehi, Da Ma, and Kazem Cheshmi <br> Sep 26</p>
                     </header>
                 </div>
             </div>
@@ -81,58 +75,51 @@
             <div class="row aln-left">
                 <div class="col-8 col-6-large col-10-medium">
 
-                    <em>* Based on paper: "Loop-Carried Dependence Transformation for Parallel Sparse Solvers on GPUs" by Da Ma, Mohammad Mahdi Salehi Dezfuli, Amir Mohammad Tavakkoli, Samirasadat Jamalidinan, Hossein Albakri, Mary Hall, and Kazem Cheshmi at SC'26</em>
+                    <p><em>* Based on the paper: "Loop-Carried Dependence Transformation for Parallel Sparse Solvers on GPUs" by Da Ma, Mohammad Mahdi Salehi Dezfuli, Amir Mohammad Tavakkoli, Samirasadat Jamalidinan, Hossein Albakri, Mary Hall, and Kazem Cheshmi at SC'26.</em></p>
 
-                    <h2>Parallelism Challenge for Scientific Solvers in GPUs</h2>
+                    <h2>Parallelism Challenge for Scientific Solvers on GPUs</h2>
 
-                    <p>Modern scientific simulations—from climate modeling and structural engineering to neural network training—rely heavily on solving massive systems of equations. GPUs are the undisputed powerhouses for these heavy computations thanks to thousands of parallel processing cores. However, scientific code frequently runs into a major obstacle: <strong>loop-carried dependences</strong>. This happens when a loop iteration needs a result calculated in a previous step, forcing operations to wait line-by-line rather than running all at once. Because sparse matrices (where most entries are zero) have unpredictable memory patterns, squeezing parallel performance out of these algorithms on GPUs has historically required manual, complex engineering.</p>
-
-
-                    <div class="image blog" style="text-align: center;">
-                        <figure style="width: 80%; margin: 0 auto;">
-                        <img src="images/lcd-blog/lcd-parallelism.gif" alt="parallelism" style="max-width: 100%; height: auto;">
-                        <figcaption><i>Figure 1: LCD enables automatic GPU parallelism loop-carried dependence.</i></figcaption>
-                        </figure>
-                    </div>
-
-                    <p>Figure 1 shows an example solver code, solving lower trianfular solver. While the inner most loop is parallel, theoutermost loop is not due read and write to x in one iteration. However, the indices come from a spatse matrix, shown in Figure 1b. Due to sparse connection, the dependence is loose between them and thus there are oppurtunites for parallelism. For example, in three waves, some accesses write to disjoint location thus they can be paralleli. For example  .</p>
-
-
-                   <h2>Loop-Carried Dependence Parallelism </h2> 
-
-        <p> <strong>LCD (Loop-Carried Dependence Parallelism)</strong>, a compiler framework/transformation designed by researchers at McMaster University and the University of Utah. LCD acts as an intelligent translator that automatically transforms tricky, sequential sparse loops into highly parallelized GPU programs. Implemented as a Python Just-In-Time (JIT) compiler, LCD analyzes code annotations at runtime, constructs a directed acyclic graph (DAG) of calculations, and maps out the safest, fastest way to distribute work across GPU threads without breaking computational dependencies.</p>
-
-                    
-
-        <p>Overall LCD transformation is shown in Figure 2. The secret to LCD’s speed lies in its two-tiered management pipeline guided by an analytical scheduler:</p>
-
-        <ul>
-            <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models—such as barrier-free execution that tracks dependencies using atomic counters—to avoid expensive kernel restarts.</li>
-            <li><strong>Thread Manager:</strong> Fine-tunes inner loops down to individual GPU threads and warps, leveraging hardware-level shuffle instructions and memory unrolling to maximize data locality.</li>
-            <li><strong>Smart Scheduler:</strong> Evaluates matrix structure and hardware latency at runtime to select the optimal strategy before execution.</li>
-        </ul>
-
-        <p>In extensive benchmarks on NVIDIA H100 GPUs across 230+ sparse matrices, LCD-generated code outperformed industry-standard libraries like <strong>cuSPARSE</strong>, achieving speedups ranging from <strong>1.60&times; to 4.56&times;</strong> across core operations like sparse triangular solves and ILU preconditioning. Crucially, the compiler's initial overhead to inspect matrix structures is amortized almost instantly—often breaking even after just one or two solves in real-world iterative applications.</p>
-
-        <p>By bridging the gap between high-level Python expressiveness and low-level GPU hardware tuning, LCD demonstrates that developer-friendly compiler abstractions can unlock hardware efficiency for complex scientific computing workloads.</p>
+                    <p>Modern scientific simulations—from climate modeling and structural engineering to neural network training—rely heavily on solving massive systems of equations. GPUs are the undisputed powerhouses for these heavy computations thanks to thousands of parallel processing cores. However, scientific code frequently runs into a major obstacle: <strong>loop-carried dependences</strong>. This happens when a loop iteration needs a result calculated in a previous step, forcing operations to wait step-by-step rather than running all at once. Because sparse matrices (where most entries are zero) have unpredictable memory patterns, squeezing parallel performance out of these algorithms on GPUs has historically required manual, complex engineering.</p>
 
                     <div class="image blog" style="text-align: center;">
                         <figure style="width: 80%; margin: 0 auto;">
-                        <img src="images/lcd-blog/lcd.png" alt="Application E2E Performance" style="max-width: 100%; height: auto;">
-                        <figcaption><i>Figure 2: LCD Compiler Overall View.</i></figcaption>
+                            <img src="images/lcd-blog/lcd-parallelism.gif" alt="LCD Parallelism Animation" style="max-width: 100%; height: auto;">
+                            <figcaption><i>Figure 1: LCD enables automatic GPU parallelism for loops with loop-carried dependences.</i></figcaption>
                         </figure>
                     </div>
 
-                    <p>For more detailed information about LCD, please refer to the <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf">LCD paper</a>.</p>
+                    <p>Figure 1 demonstrates a sparse lower triangular solve kernel. While the innermost loop is parallel, the outermost loop is sequential due to read and write operations targeting the solution vector <code>x</code> within iterations. However, because the column and row indices stem from a sparse matrix, the coupling between iterations is relatively sparse. These sparse inter-iteration dependences create opportunities for concurrent execution. For instance, iterations with non-overlapping memory locations can be executed in parallel across independent waves of execution.</p>
 
 
-                    
+                    <h2>Loop-Carried Dependence (LCD) Transformation</h2> 
 
-                    <p align="justify">
-                    LCD paper: <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf">SC26 Draft</a><br>
-                    LCD code repository: <a href="https://github.com/swiftWare-Lab/lcd">https://github.com/swiftWare-Lab/lcd</a>
+                    <p>To address this challenge, researchers at McMaster University and the University of Utah developed <strong>LCD (Loop-Carried Dependence)</strong>, a compiler framework and transformation technique. LCD acts as an intelligent translator that automatically transforms sequential sparse loops into highly parallelized GPU programs. Implemented as a Python Just-In-Time (JIT) compiler, LCD analyzes code annotations at runtime, constructs a directed acyclic graph (DAG) of calculations, and maps out the safest and fastest way to distribute work across GPU threads without breaking computational dependencies.</p>
+
+                    <p>The overall LCD transformation pipeline is shown in Figure 2. The secret to LCD’s efficiency lies in its two-tiered management pipeline guided by an analytical scheduler:</p>
+
+                    <ul>
+                        <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models—such as barrier-free execution that tracks dependencies using atomic counters—to avoid expensive kernel restarts.</li>
+                        <li><strong>Thread Manager:</strong> Fine-tunes inner loops down to individual GPU threads and warps, leveraging hardware-level shuffle instructions and loop unrolling to maximize data locality.</li>
+                        <li><strong>Smart Scheduler:</strong> Evaluates matrix structure and hardware latency at runtime to select the optimal strategy before execution.</li>
+                    </ul>
+
+                    <p>In extensive benchmarks on NVIDIA H100 GPUs across 230+ sparse matrices, LCD-generated code outperformed industry-standard libraries like <strong>cuSPARSE</strong>, achieving geometric mean speedups ranging from <strong>1.60&times; to 4.56&times;</strong> across core operations like sparse triangular solves, Gauss-Seidel iterations, and ILU preconditioning. Crucially, the compiler's initial inspection overhead to analyze matrix structures is amortized almost instantly—often breaking even after just one or two solves in real-world iterative applications.</p>
+
+                    <p>By bridging the gap between high-level Python expressiveness and low-level GPU hardware tuning, LCD demonstrates that developer-friendly compiler abstractions can unlock hardware efficiency for complex scientific computing workloads.</p>
+
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 80%; margin: 0 auto;">
+                            <img src="images/lcd-blog/lcd.png" alt="LCD Compiler Pipeline Overview" style="max-width: 100%; height: auto;">
+                            <figcaption><i>Figure 2: LCD Compiler Overall View.</i></figcaption>
+                        </figure>
+                    </div>
+
+                    <p>For more detailed information about LCD, please refer to the <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf" target="_blank" rel="noopener">LCD paper</a>.</p>
+
+                    <p style="text-align: justify;">
+                        <strong>LCD paper:</strong> <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf" target="_blank" rel="noopener">SC26 Draft</a><br>
+                        <strong>LCD code repository:</strong> <a href="https://github.com/swiftWare-Lab/lcd" target="_blank" rel="noopener">https://github.com/swiftWare-Lab/lcd</a>
                     </p>
-
 
                 </div>
             </div>
