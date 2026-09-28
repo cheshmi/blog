@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>How Smart Compilers Unleash GPUs for Scientific Solvers?</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="keywords" content="Kazem Cheshmi, Blog, Sparse, Matrix, Math, Programming, Parallel, Compiler">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-178642760-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-178642760-1');
+    </script>
+
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h2 {
+            color: #0056b3;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        .image-placeholder {
+            border: 1px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+        }
+        .image-placeholder img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+        /* .image-placeholder p {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .image-placeholder:nth-last-child(-n+2) p {
+            text-align: left;
+        } */
+    </style>
+</head>
+<body class="is-preload">
+
+    <nav id="navb">
+        <ul class="container">
+            <li><a href="index.html">Home</a></li>
+        </ul>
+    </nav>
+
+    <article id="top" class="wrapper style2">
+        <div class="container">
+            <div class="row">
+                <div class="col-8 col-6-large col-10-medium">
+                    <header>
+                        <h2><strong>How Smart Compilers Unleash GPUs for Scientific Solvers?</strong></h2>
+                        Mehdi Salehi, Da Ma, and Kazem Cheshmi <br> Sep 26
+                    </header>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <article id="edu" class="wrapper style1">
+        <div class="container">
+            <div class="row aln-left">
+                <div class="col-8 col-6-large col-10-medium">
+
+                    <em>* Based on paper: "Loop-Carried Dependence Transformation for Parallel Sparse Solvers on GPUs" by Da Ma, Mohammad Mahdi Salehi Dezfuli, Amir Mohammad Tavakkoli, Samirasadat Jamalidinan, Hossein Albakri, Mary Hall, and Kazem Cheshmi at SC'26</em>
+
+                    <h2>Parallelism Challenge for Scientific Solvers in GPUs</h2>
+
+                    <p>Modern scientific simulations—from climate modeling and structural engineering to neural network training—rely heavily on solving massive systems of equations. GPUs are the undisputed powerhouses for these heavy computations thanks to thousands of parallel processing cores. However, scientific code frequently runs into a major obstacle: <strong>loop-carried dependences</strong>. This happens when a loop iteration needs a result calculated in a previous step, forcing operations to wait line-by-line rather than running all at once. Because sparse matrices (where most entries are zero) have unpredictable memory patterns, squeezing parallel performance out of these algorithms on GPUs has historically required manual, complex engineering.</p>
+
+
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 80%; margin: 0 auto;">
+                        <img src="images/lcd-blog/lcd-parallelism.gif" alt="parallelism" style="max-width: 100%; height: auto;">
+                        <figcaption><i>Figure 1: LCD enables automatic GPU parallelism loop-carried dependence.</i></figcaption>
+                        </figure>
+                    </div>
+
+                    <p>Figure 1 shows an example solver code, solving lower trianfular solver. While the inner most loop is parallel, theoutermost loop is not due read and write to x in one iteration. However, the indices come from a spatse matrix, shown in Figure 1b. Due to sparse connection, the dependence is loose between them and thus there are oppurtunites for parallelism. For example, in three waves, some accesses write to disjoint location thus they can be paralleli. For example  .</p>
+
+
+                   <h2>Loop-Carried Dependence Parallelism </h2> 
+
+        <p> <strong>LCD (Loop-Carried Dependence Parallelism)</strong>, a compiler framework/transformation designed by researchers at McMaster University and the University of Utah. LCD acts as an intelligent translator that automatically transforms tricky, sequential sparse loops into highly parallelized GPU programs. Implemented as a Python Just-In-Time (JIT) compiler, LCD analyzes code annotations at runtime, constructs a directed acyclic graph (DAG) of calculations, and maps out the safest, fastest way to distribute work across GPU threads without breaking computational dependencies.</p>
+
+                    
+
+        <p>Overall LCD transformation is shown in Figure 2. The secret to LCD’s speed lies in its two-tiered management pipeline guided by an analytical scheduler:</p>
+
+        <ul>
+            <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models—such as barrier-free execution that tracks dependencies using atomic counters—to avoid expensive kernel restarts.</li>
+            <li><strong>Thread Manager:</strong> Fine-tunes inner loops down to individual GPU threads and warps, leveraging hardware-level shuffle instructions and memory unrolling to maximize data locality.</li>
+            <li><strong>Smart Scheduler:</strong> Evaluates matrix structure and hardware latency at runtime to select the optimal strategy before execution.</li>
+        </ul>
+
+        <p>In extensive benchmarks on NVIDIA H100 GPUs across 230+ sparse matrices, LCD-generated code outperformed industry-standard libraries like <strong>cuSPARSE</strong>, achieving speedups ranging from <strong>1.60&times; to 4.56&times;</strong> across core operations like sparse triangular solves and ILU preconditioning. Crucially, the compiler's initial overhead to inspect matrix structures is amortized almost instantly—often breaking even after just one or two solves in real-world iterative applications.</p>
+
+        <p>By bridging the gap between high-level Python expressiveness and low-level GPU hardware tuning, LCD demonstrates that developer-friendly compiler abstractions can unlock hardware efficiency for complex scientific computing workloads.</p>
+
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 80%; margin: 0 auto;">
+                        <img src="images/lcd-blog/lcd.png" alt="Application E2E Performance" style="max-width: 100%; height: auto;">
+                        <figcaption><i>Figure 2: LCD Compiler Overall View.</i></figcaption>
+                        </figure>
+                    </div>
+
+                    <p>For more detailed information about LCD, please refer to the <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf">LCD paper</a>.</p>
+
+
+                    
+
+                    <p align="justify">
+                    LCD paper: <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf">SC26 Draft</a><br>
+                    LCD code repository: <a href="https://github.com/swiftWare-Lab/lcd">https://github.com/swiftWare-Lab/lcd</a>
+                    </p>
+
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.scrolly.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+
+</body>
+</html>
