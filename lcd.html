@@ -63,6 +63,17 @@
 
         p {
             margin-bottom: 10px;
+            text-align: justify; /* Justifies paragraph text */
+        }
+
+        ul {
+            text-align: justify; /* Justifies unordered list items */
+        }
+
+        figcaption {
+            text-align: justify;
+            margin-top: 12px;    /* Space between the image and the caption text */
+            margin-bottom: 25px; /* Space between the caption text and the following paragraph */
         }
 
         .image-placeholder {
@@ -96,7 +107,7 @@
                 <div class="col-8 col-6-large col-10-medium">
                     <header>
                         <h2><strong>How Smart Compilers Unleash GPUs for Scientific Solvers</strong></h2>
-                        <p class="meta">Mehdi Salehi, Da Ma, and Kazem Cheshmi <br> Sep 26</p>
+                        <p class="meta">Mahdi Salehi, Da Ma, and Kazem Cheshmi <br> Sep 26</p>
                     </header>
                 </div>
             </div>
@@ -118,11 +129,11 @@
                     <div class="image blog" style="text-align: center;">
                         <figure style="width: 100%; margin: 0 auto;">
                             <img src="images/lcd-blog/lcd-parallelism.gif" alt="LCD Parallelism Animation" style="max-width: 100%; height: auto;">
-                            <figcaption><i>Figure 1: LCD enables automatic GPU parallelism for loops with loop-carried dependences.</i></figcaption>
+                            <figcaption><i>Figure 1: An example LCD input code and matrix demonstrate how operations are mapped to thread-blocks and threads. The code assumes the matrix is stored in Compressed Sparse Column (CSC) format, shown with <code> {n, Ap, Ai, Ax}</code>.  </i></figcaption>
                         </figure>
                     </div>
 
-                    <p>Figure 1 demonstrates a simple scintific solver, sparse lower triangular solve kernel. The outermost loop is sequential due to read and write operations targeting the solution vector <code>x</code> within iterations. However, because the column and row indices stem from a sparse matrix, the coupling between iterations is relatively sparse. These sparse inter-iteration dependences create opportunities for concurrent execution. For instance, iterations with non-overlapping memory locations can be executed in parallel across independent waves of execution.</p>
+                    <p>Figure 1 demonstrates a simple scintific solver, sparse lower triangular solve kernel. The outermost loop is sequential due to read and write operations targeting the solution vector <code>x</code> within iterations. However, because the column and row indices stem from a sparse matrix, the coupling between iterations is relatively sparse. These sparse inter-iteration dependences create opportunities for concurrent execution. For instance, iterations that do not cause unresolvable read-after-write dependencies can run in parallel. Iterations 0 and 1 can be independently computed using different thread blocks; however, since both write to <code>x[3]</code>, an atomic operation is needed to ensure correctness. On the other hand, iterations 0 and 2 cannot run in parallel because iteration 0 writes to <code>x[2]</code>, which iteration 2 reads from. Thus, iteration 2 must wait until iteration 0 completes. This is often ensured through barriers or other synchronization methods. </p>
 
                     <h2>Loop-Carried Dependence Parallelism (LCD) Transformation</h2> 
 
@@ -134,12 +145,12 @@
                             <figcaption><i>Figure 2: LCD Compiler Overall View. Iterations of the annotated loop are mapped to thread blocks, specified by <code>block_map</code>, and threads, specified by <code>thread_map</code>. The scheduler determines thread granularity based on the input matrix and code structure.</i></figcaption>
                         </figure>
                     </div>
-                    
+
 
                     <p>The overall LCD transformation pipeline is shown in Figure 2. As shown, LCD has a two-tiered management pipeline guided by an analytical scheduler:</p>
 
                     <ul style="font-size: 1rem;">
-                        <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models, such as barrier-free execution shown in Figure 1 that tracks dependencies using atomic counters, to avoid expensive kernel restarts.</li>
+                        <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models, such as barrier-free execution that tracks dependencies using atomic counters, to avoid expensive kernel restarts.</li>
                         <li><strong>Thread Manager:</strong> Parallelize inner loops down to individual GPU threads and warps, leveraging hardware-level shuffle instructions and loop unrolling to maximize data locality.</li>
                         <li><strong>Smart Scheduler:</strong> Evaluates matrix structure and hardware latency at runtime to select the optimal strategy before execution.</li>
                     </ul>
@@ -152,7 +163,7 @@
 
                     <p>For more detailed information about LCD, please refer to the <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf" target="_blank" rel="noopener">LCD paper</a>.</p>
 
-                    <p style="text-align: justify;">
+                    <p>
                         <strong>LCD paper:</strong> <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf" target="_blank" rel="noopener">SC26 Draft</a><br>
                         <strong>LCD code repository:</strong> <a href="https://github.com/swiftWare-Lab/lcd" target="_blank" rel="noopener">https://github.com/swiftWare-Lab/lcd</a>
                     </p>
