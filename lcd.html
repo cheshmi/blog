@@ -126,13 +126,21 @@
 
                     <h2>Loop-Carried Dependence Parallelism (LCD) Transformation</h2> 
 
-                    <p>To address this challenge, We, a group of researchers from McMaster University and the University of Utah developed <strong>LCD</strong>, a compiler framework and transformation technique. LCD acts as an intelligent translator that automatically transforms sequential sparse loops into highly parallelized GPU programs. Implemented as a Python Just-In-Time (JIT) compiler, LCD analyzes code annotations at runtime, constructs a directed acyclic graph (DAG) of calculations, and maps out the safest and fastest way to distribute work across GPU threads without breaking computational dependencies.</p>
+                    <p>To address this challenge, we, a group of researchers from McMaster University and the University of Utah developed <strong>LCD</strong>, a compiler framework and transformation technique. LCD acts as an intelligent translator that automatically transforms sequential sparse loops into highly parallelized GPU programs. Implemented as a Python Just-In-Time (JIT) compiler, LCD analyzes code annotations at runtime, constructs a directed acyclic graph (DAG) of calculations, and maps out the safest and fastest way to distribute work across GPU threads without breaking computational dependencies.</p>
 
-                    <p>The overall LCD transformation pipeline is shown in Figure 2. The secret to LCD’s efficiency lies in its two-tiered management pipeline guided by an analytical scheduler:</p>
+                    <div class="image blog" style="text-align: center;">
+                        <figure style="width: 80%; margin: 0 auto;">
+                            <img src="images/lcd-blog/lcd.png" alt="LCD Compiler Pipeline Overview" style="max-width: 100%; height: auto;">
+                            <figcaption><i>Figure 2: LCD Compiler Overall View. Iterations of the annotated loop are mapped to thread blocks, specified by <code>block_map</code>, and threads, specified by <code>thread_map</code>. The scheduler determines thread granularity based on the input matrix and code structure.</i></figcaption>
+                        </figure>
+                    </div>
+                    
+
+                    <p>The overall LCD transformation pipeline is shown in Figure 2. As shown, LCD has a two-tiered management pipeline guided by an analytical scheduler:</p>
 
                     <ul style="font-size: 1rem;">
-                        <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models—such as barrier-free execution that tracks dependencies using atomic counters—to avoid expensive kernel restarts.</li>
-                        <li><strong>Thread Manager:</strong> Fine-tunes inner loops down to individual GPU threads and warps, leveraging hardware-level shuffle instructions and loop unrolling to maximize data locality.</li>
+                        <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models, such as barrier-free execution shown in Figure 1 that tracks dependencies using atomic counters, to avoid expensive kernel restarts.</li>
+                        <li><strong>Thread Manager:</strong> Parallelize inner loops down to individual GPU threads and warps, leveraging hardware-level shuffle instructions and loop unrolling to maximize data locality.</li>
                         <li><strong>Smart Scheduler:</strong> Evaluates matrix structure and hardware latency at runtime to select the optimal strategy before execution.</li>
                     </ul>
 
@@ -140,12 +148,7 @@
 
                     <p>By bridging the gap between high-level Python expressiveness and low-level GPU hardware tuning, LCD demonstrates that developer-friendly compiler abstractions can unlock hardware efficiency for complex scientific computing workloads.</p>
 
-                    <div class="image blog" style="text-align: center;">
-                        <figure style="width: 80%; margin: 0 auto;">
-                            <img src="images/lcd-blog/lcd.png" alt="LCD Compiler Pipeline Overview" style="max-width: 100%; height: auto;">
-                            <figcaption><i>Figure 2: LCD Compiler Overall View.</i></figcaption>
-                        </figure>
-                    </div>
+                    
 
                     <p>For more detailed information about LCD, please refer to the <a href="https://www.cheshmi.cc/KazemCheshmi_files/lcd_SC26.pdf" target="_blank" rel="noopener">LCD paper</a>.</p>
 
