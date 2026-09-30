@@ -22,18 +22,49 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            margin: 20px;
+            margin: 0;
             color: #333;
         }
+
+        /* --- TOP HEADER SECTION COMPACT STYLING --- */
+        #top {
+            padding-top: 2em !important;      /* Overrides standard template wrapper padding (~6-8em) */
+            padding-bottom: 1.5em !important;
+        }
+
+        #top header {
+            margin-bottom: 0 !important;
+        }
+
+        #top h2 {
+            margin-top: 0 !important;        /* Removes top margin above the title */
+            border-bottom: none;              /* Removes bottom line under main header title */
+            padding-bottom: 0;
+        }
+
+        .meta {
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 8px;
+            margin-bottom: 0;
+        }
+
+        /* --- CONTENT BODY STYLING --- */
+        #edu {
+            padding-top: 2em !important;      /* Controls gap between top banner and blog body */
+        }
+
         h2 {
             color: #0056b3;
             border-bottom: 2px solid #eee;
             padding-bottom: 5px;
             margin-top: 30px;
         }
+
         p {
             margin-bottom: 10px;
         }
+
         .image-placeholder {
             border: 1px dashed #ccc;
             padding: 20px;
@@ -41,6 +72,7 @@
             margin: 20px 0;
             background-color: #f9f9f9;
         }
+
         .image-placeholder img {
             max-width: 100%;
             height: auto;
@@ -57,6 +89,7 @@
         </ul>
     </nav>
 
+    <!-- Top Header Article Retained -->
     <article id="top" class="wrapper style2">
         <div class="container">
             <div class="row">
@@ -70,6 +103,7 @@
         </div>
     </article>
 
+    <!-- Main Content Article -->
     <article id="edu" class="wrapper style1">
         <div class="container">
             <div class="row aln-left">
@@ -79,25 +113,24 @@
 
                     <h2>Parallelism Challenge for Scientific Solvers on GPUs</h2>
 
-                    <p>Modern scientific simulations—from climate modeling and structural engineering to neural network training—rely heavily on solving massive systems of equations. GPUs are the undisputed powerhouses for these heavy computations thanks to thousands of parallel processing cores. However, scientific code frequently runs into a major obstacle: <strong>loop-carried dependences</strong>. This happens when a loop iteration needs a result calculated in a previous step, forcing operations to wait step-by-step rather than running all at once. Because sparse matrices (where most entries are zero) have unpredictable memory patterns, squeezing parallel performance out of these algorithms on GPUs has historically required manual, complex engineering.</p>
+                    <p>Modern scientific simulations such as climate modeling and structural engineering, rely heavily on solving massive systems of equations. GPUs are the undisputed powerhouses for these heavy computations thanks to thousands of parallel processing cores. However, scientific code frequently runs into a major obstacle: <strong>loop-carried dependences</strong>. This happens when a loop iteration needs a result calculated in a previous step, forcing operations to wait step-by-step rather than running all at once. Because sparse matrices (where most entries are zero) have unpredictable memory patterns, squeezing parallel performance out of these algorithms on GPUs has historically required manual, complex engineering.</p>
 
                     <div class="image blog" style="text-align: center;">
-                        <figure style="width: 80%; margin: 0 auto;">
+                        <figure style="width: 100%; margin: 0 auto;">
                             <img src="images/lcd-blog/lcd-parallelism.gif" alt="LCD Parallelism Animation" style="max-width: 100%; height: auto;">
                             <figcaption><i>Figure 1: LCD enables automatic GPU parallelism for loops with loop-carried dependences.</i></figcaption>
                         </figure>
                     </div>
 
-                    <p>Figure 1 demonstrates a sparse lower triangular solve kernel. While the innermost loop is parallel, the outermost loop is sequential due to read and write operations targeting the solution vector <code>x</code> within iterations. However, because the column and row indices stem from a sparse matrix, the coupling between iterations is relatively sparse. These sparse inter-iteration dependences create opportunities for concurrent execution. For instance, iterations with non-overlapping memory locations can be executed in parallel across independent waves of execution.</p>
+                    <p>Figure 1 demonstrates a simple scintific solver, sparse lower triangular solve kernel. The outermost loop is sequential due to read and write operations targeting the solution vector <code>x</code> within iterations. However, because the column and row indices stem from a sparse matrix, the coupling between iterations is relatively sparse. These sparse inter-iteration dependences create opportunities for concurrent execution. For instance, iterations with non-overlapping memory locations can be executed in parallel across independent waves of execution.</p>
 
+                    <h2>Loop-Carried Dependence Parallelism (LCD) Transformation</h2> 
 
-                    <h2>Loop-Carried Dependence (LCD) Transformation</h2> 
-
-                    <p>To address this challenge, researchers at McMaster University and the University of Utah developed <strong>LCD (Loop-Carried Dependence)</strong>, a compiler framework and transformation technique. LCD acts as an intelligent translator that automatically transforms sequential sparse loops into highly parallelized GPU programs. Implemented as a Python Just-In-Time (JIT) compiler, LCD analyzes code annotations at runtime, constructs a directed acyclic graph (DAG) of calculations, and maps out the safest and fastest way to distribute work across GPU threads without breaking computational dependencies.</p>
+                    <p>To address this challenge, We, a group of researchers from McMaster University and the University of Utah developed <strong>LCD</strong>, a compiler framework and transformation technique. LCD acts as an intelligent translator that automatically transforms sequential sparse loops into highly parallelized GPU programs. Implemented as a Python Just-In-Time (JIT) compiler, LCD analyzes code annotations at runtime, constructs a directed acyclic graph (DAG) of calculations, and maps out the safest and fastest way to distribute work across GPU threads without breaking computational dependencies.</p>
 
                     <p>The overall LCD transformation pipeline is shown in Figure 2. The secret to LCD’s efficiency lies in its two-tiered management pipeline guided by an analytical scheduler:</p>
 
-                    <ul>
+                    <ul style="font-size: 1rem;">
                         <li><strong>Block Manager:</strong> Maps larger computational chunks to GPU thread-blocks and decides between synchronization models—such as barrier-free execution that tracks dependencies using atomic counters—to avoid expensive kernel restarts.</li>
                         <li><strong>Thread Manager:</strong> Fine-tunes inner loops down to individual GPU threads and warps, leveraging hardware-level shuffle instructions and loop unrolling to maximize data locality.</li>
                         <li><strong>Smart Scheduler:</strong> Evaluates matrix structure and hardware latency at runtime to select the optimal strategy before execution.</li>
